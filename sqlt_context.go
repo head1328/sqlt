@@ -9,6 +9,7 @@ import (
 	"time"
 
 	"github.com/jmoiron/sqlx"
+	sqltraced "gopkg.in/DataDog/dd-trace-go.v1/contrib/jmoiron/sqlx"
 )
 
 func open(ctx context.Context, driverName, sources string, groupName string) (*DB, error) {
@@ -30,7 +31,7 @@ func open(ctx context.Context, driverName, sources string, groupName string) (*D
 	db.driverName = driverName
 
 	for i := range conns {
-		db.sqlxdb[i], err = sqlx.Open(driverName, conns[i])
+		db.sqlxdb[i], err = sqltraced.Open(driverName, conns[i])
 		if err != nil {
 			db.inactivedb = append(db.inactivedb, i)
 			return nil, err
