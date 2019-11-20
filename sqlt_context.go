@@ -12,7 +12,7 @@ import (
 	sqltraced "gopkg.in/DataDog/dd-trace-go.v1/contrib/jmoiron/sqlx"
 )
 
-func open(ctx context.Context, driverName, sources string, groupName string) (*DB, error) {
+func open(ctx context.Context, driverName, sources string, groupName string, trace bool) (*DB, error) {
 	var err error
 
 	conns := strings.Split(sources, ";")
@@ -31,7 +31,11 @@ func open(ctx context.Context, driverName, sources string, groupName string) (*D
 	db.driverName = driverName
 
 	for i := range conns {
-		db.sqlxdb[i], err = sqltraced.Open(driverName, conns[i])
+		if trace == true {
+			db.sqlxdb[i], err = sqltraced.Open(driverName, conns[i])
+		} else {
+			db.sqlxdb[i], err = sqlx.Open(driverName, conns[i])
+		}
 		if err != nil {
 			db.inactivedb = append(db.inactivedb, i)
 			return nil, err
@@ -64,9 +68,9 @@ func open(ctx context.Context, driverName, sources string, groupName string) (*D
 	return db, err
 }
 
-func openContextConnection(ctx context.Context, driverName, sources string, groupName string) (*DB, error) {
+func openContextConnection(ctx context.Context, driverName, sources string, groupName string, trace bool) (*DB, error) {
 	// ping database to retrieve error
-	db, err := open(ctx, driverName, sources, groupName)
+	db, err := open(ctx, driverName, sources, groupName, trace)
 	if err != nil {
 		return nil, err
 	}
@@ -74,8 +78,8 @@ func openContextConnection(ctx context.Context, driverName, sources string, grou
 }
 
 // OpenWithContext opening connection with context
-func OpenWithContext(ctx context.Context, driver, sources string) (*DB, error) {
-	return openContextConnection(ctx, driver, sources, "")
+func OpenWithContext(ctx context.Context, driver, sources string, trace bool) (*DB, error) {
+	return openContextConnection(ctx, driver, sources, "", trace)
 }
 
 // PingContext database

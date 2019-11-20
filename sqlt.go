@@ -51,8 +51,8 @@ const defaultGroupName = "sqlt_open"
 
 var dbLengthMutex = &sync.Mutex{}
 
-func openConnection(driverName, sources string, groupName string) (*DB, error) {
-	db, err := open(context.Background(), driverName, sources, groupName)
+func openConnection(driverName, sources string, groupName string, trace bool) (*DB, error) {
+	db, err := open(context.Background(), driverName, sources, groupName, trace)
 	if err != nil {
 		return nil, err
 	}
@@ -60,13 +60,13 @@ func openConnection(driverName, sources string, groupName string) (*DB, error) {
 }
 
 // Open connection to database
-func Open(driverName, sources string) (*DB, error) {
-	return openConnection(driverName, sources, "")
+func Open(driverName, sources string, trace bool) (*DB, error) {
+	return openConnection(driverName, sources, "", trace)
 }
 
 // OpenWithName open the connection and set connection group name
-func OpenWithName(driverName, sources string, name string) (*DB, error) {
-	return openConnection(driverName, sources, name)
+func OpenWithName(driverName, sources string, name string, trace bool) (*DB, error) {
+	return openConnection(driverName, sources, name, trace)
 }
 
 // GetStatus return database status
